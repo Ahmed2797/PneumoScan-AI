@@ -113,3 +113,36 @@ class Configeration_Manager:
             return prepare_base_model_config
         except Exception as e:
             raise CustomException(e, sys)
+
+    def get_prepare_callback_config(self) -> Prepare_Callback_Config:
+        """
+        Creates and returns the Prepare_Callback_Config object 
+        by reading values from the config YAML file.
+
+        Returns:
+            Prepare_Callback_Config: Configuration object for callbacks.
+        Steps:
+            - Extract prepare callback section from config YAML
+            - Ensure root directory exists
+            - Populate Prepare_Callback_Config dataclass with YAML values
+        Raises:
+            CustomException: If extraction or object creation fails.
+        """
+        try:
+            config = self.config.prepare_callbacks
+
+            # Create root directory for callbacks
+            create_directories([config.root_dir])
+
+            prepare_callback_config = Prepare_Callback_Config(
+                root_dir=config.root_dir,
+                tensorboard_root_log_dir=config.tensorboard_root_log_dir,
+                checkpoint_model_filepath=config.checkpoint_model_filepath
+            )
+        
+            return prepare_callback_config
+        except Exception as e:
+            raise CustomException(e, sys)
+        
+
+        
