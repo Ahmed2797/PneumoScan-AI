@@ -17,3 +17,11 @@ step3 :
     configeration/__init__.py
 
             components/data_ingestion.py
+
+step3 :
+    entity/config.py
+    constant/__init__.py
+    yamlfile/config.yamlfile
+    configeration/__init__.py
+
+            components/prepare_basemodel.py
