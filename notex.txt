@@ -1,0 +1,19 @@
+step1 :
+    templates.sh
+    requirements.txt
+    setup.py
+
+    pip install -r requirements.txt
+
+step2 :
+    logging.py
+    exception.py
+
+step3 :
+    entity/config.py
+    utilites/__init__.py
+    constant/__init__.py
+    yamlfile/config.yamlfile
+    configeration/__init__.py
+
+            components/data_ingestion.py
