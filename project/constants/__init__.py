@@ -33,3 +33,25 @@ PARAM_YAML_FILE  = YAML_DIR / "param.yaml"
 
 SECRET_YAML_FILE = ROOT_DIR / "yamlfile" / "secrets.yaml"
 """Path: Sensitive credentials (API keys, DB passwords). Ensure this is in .gitignore!"""
+
+
+## Checkpoint-List
+
+# 1. Reduce Learning Rate on Plateau
+monitor='val_loss',
+factor=0.1,
+patience=5,
+min_lr=1e-7,
+verbose=1
+
+# 2. Early Stopping
+monitor='val_loss',
+patience=10,
+restore_best_weights=True,
+verbose=1
+
+# 3. Model Checkpoint
+'best_chest_xray_model.h5',
+monitor='val_loss',
+save_best_only=True,
+verbose=1
