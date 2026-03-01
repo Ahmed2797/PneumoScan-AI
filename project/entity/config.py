@@ -16,3 +16,45 @@ class Data_Ingestion_Config:
     source_url: str
     local_data_file: Path
     unzip_dir: Path
+
+
+
+@dataclass(frozen=True)
+class Prepare_Basemodel_Config:
+    """
+    Dataclass for storing the configuration required to prepare the base model.
+
+    Attributes:
+        root_dir (Path): Base directory for base model artifacts.
+        base_model (Path): Path to the base model file.
+        update_base_model (Path): Path to the updated base model file.
+        param_image_size (list): List of image sizes for training.
+        param_batch_size (int): Batch size for training.
+        param_epochs (int): Number of epochs for training.
+    """
+    root_dir: Path
+    base_model: Path
+    update_base_model: Path 
+    param_image_size: list
+    param_batch_size: int
+    param_epochs: int 
+    param_learning_rate: float
+    param_classics: int
+    param_weight:str
+    param_include_top: bool
+
+
+@dataclass(frozen=True)
+class Prepare_Callback_Config:
+    """
+    Dataclass for storing the configuration required to create callbacks.
+
+    Attributes:
+        root_dir (Path): Base directory for callback-related artifacts.
+        tensorboard_root_log_dir (Path): Directory where TensorBoard logs will be saved.
+        checkpoint_model_filepath (Path): Full filepath where the model checkpoint will be stored.
+    """
+    root_dir: Path
+    tensorboard_root_log_dir: Path
+    checkpoint_model_filepath: Path
+
