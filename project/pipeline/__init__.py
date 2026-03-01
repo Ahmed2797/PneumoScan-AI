@@ -1,9 +1,11 @@
-from project.components.data_ingestion import Data_Ingestion
+from pathlib import Path
+import sys
 
+from project.components.data_ingestion import Data_Ingestion
+from project.components.prepare_basemodel import Prepare_Segmentation_Model
 from project.configeration import Configeration_Manager
 from project.exception import CustomException
 from project.logger import logging
-import sys
 
 
 class Training_Pipeline:
@@ -46,6 +48,31 @@ class Training_Pipeline:
             logging.info(">>>>>>> Data Ingestion completed <<<<<<<<<")
         except Exception as e:
             raise CustomException(e, sys)
+    
+    def run_prepare_base_model(self):
+        """
+        Execute the base model preparation pipeline.
+        
+        Steps:
+        - Build the ResNet50 U-Net model architecture.
+        - Compile the model with the specified loss and metrics.
+        - Save the prepared model to disk.
+        
+        Raises:
+            CustomException: If any part of model preparation fails.
+        """
+        try:
+            logging.info(">>>>>>> Base Model Preparation started <<<<<<<<<")
+            prepare_base_model_config = self.config.get_prepare_base_model_config()
+            model_preparer = Prepare_Segmentation_Model(config=prepare_base_model_config)
+            unet_model = model_preparer.build_resnet50_unet()
+            model_preparer.save_model(
+                path=Path(prepare_base_model_config.update_base_model), 
+                model=unet_model
+            )
+            logging.info(">>>>>>> Base Model Preparation completed <<<<<<<<<")
+        except Exception as e:
+            raise CustomException(e, sys)
 
 
     def run(self):
@@ -62,7 +89,7 @@ class Training_Pipeline:
         try:
             logging.info(">>>>>>> Training Pipeline started <<<<<<<<<")
             self.run_data_ingestion()
-            # self.run_prepare_base_model()
+            self.run_prepare_base_model()
             # self.run_model_training()
             # self.run_model_evaluation()
             logging.info(">>>>>>> Training Pipeline completed <<<<<<<<<")
