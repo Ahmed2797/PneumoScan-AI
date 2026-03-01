@@ -5,6 +5,8 @@ import tensorflow as tf
 from project.entity.config import Prepare_Callback_Config
 from project.exception import CustomException
 from project.constants import *
+from project.configeration import Configeration_Manager
+
 
 class Call_Backs:
     """
@@ -99,7 +101,7 @@ class Call_Backs:
         """
         try:    
             return tf.keras.callbacks.EarlyStopping(
-                monitor=monitor, # Fixed: was 'fmonitor'
+                monitor=monitor,
                 patience=patience,
                 restore_best_weights=restore_best_weights,
                 verbose=verbose
@@ -107,7 +109,7 @@ class Call_Backs:
         except Exception as e:
             raise CustomException(e, sys)
 
-    def get_tb_ckpt_callbacks(self) -> list:
+    def get_callbacks(self) -> list:
         """
         Compiles all initialized callbacks into a single list.
 
@@ -124,3 +126,15 @@ class Call_Backs:
             ]
         except Exception as e:
             raise CustomException(e, sys)
+        
+if __name__ == "__main__":
+    try:
+        config_manager = Configeration_Manager()
+        config = config_manager.get_prepare_callback_config()
+        callbacks_manager = Call_Backs(config)
+        callbacks_list = callbacks_manager.get_callbacks()
+        print("Callbacks created successfully:")
+        for callback in callbacks_list:
+            print(f"- {callback.__class__.__name__}")
+    except Exception as e:
+        print(f"Error creating callbacks: {e}")
