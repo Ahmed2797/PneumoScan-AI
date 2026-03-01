@@ -212,3 +212,46 @@ def encodeImageIntoBase64(croppedImagePath: str) -> bytes:
             return base64.b64encode(f.read())
     except Exception as e:
         raise CustomException(e, sys)
+
+
+## ------------------------------Tensorflow-Choice---------------------------
+import tensorflow as tf
+
+def parse_data(img_path, mask_path):
+
+    img = tf.io.read_file(img_path)
+    img = tf.image.decode_png(img, channels=3)
+    img = tf.image.resize(img, [256, 256])
+    img = tf.cast(img, tf.float32) / 255.0
+
+    mask = tf.io.read_file(mask_path)
+    mask = tf.image.decode_png(mask, channels=1)
+    mask = tf.image.resize(mask, [256, 256])
+    mask = tf.cast(mask, tf.float32) / 255.0
+
+    return img, mask
+
+def sync_augment(img, mask):
+
+    seed = tf.random.experimental.stateless_split(tf.random.uniform([2], maxval=10000, dtype=tf.int32), num=1)[0]
+
+    img = tf.image.stateless_random_flip_left_right(img, seed=seed)
+    mask = tf.image.stateless_random_flip_left_right(mask, seed=seed)
+
+    img = tf.image.random_brightness(img, max_delta=0.2)
+
+    return img, mask
+
+def tf_dataset(x, y, batch_size=8, training=True):
+    dataset = tf.data.Dataset.from_tensor_slices((x, y))
+
+    dataset = dataset.map(parse_data, num_parallel_calls=tf.data.AUTOTUNE)
+
+    if training:
+        dataset = dataset.map(sync_augment, num_parallel_calls=tf.data.AUTOTUNE)
+        dataset = dataset.shuffle(buffer_size=1000)
+
+    dataset = dataset.batch(batch_size)
+    dataset = dataset.prefetch(tf.data.AUTOTUNE)
+
+    return dataset
