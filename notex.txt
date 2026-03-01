@@ -25,3 +25,12 @@ step3 :
     configeration/__init__.py
 
             components/prepare_basemodel.py
+
+step4 :
+    entity/config.py
+    constant/__init__.py
+    yamlfile/config.yamlfile
+    configeration/__init__.py
+
+            components/callbacks.py
+
