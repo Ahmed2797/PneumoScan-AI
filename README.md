@@ -16,7 +16,7 @@ pip install -r requirements.txt
 ## 📂 Download Dataset
 
     ## smaill size
-    https://drive.google.com/file/d/1cZUsEzJXCw3wNE4yjykzg678SXJ5bq9R/view?usp=sharing
+    https://drive.google.com/file/d/1bo0OC0oT2o8lx7d5fBmVMEyOtBMMCBp2/view?usp=sharing
     https://www.kaggle.com/c/siim-acr-pneumothorax-segmentation
 
 ```bash
