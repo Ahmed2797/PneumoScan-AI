@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Tuple
 from keras import layers, models, Input
 from keras.applications import ResNet50
-from keras import backend as K
 
 from project.configeration import Configeration_Manager
 from project.entity.config import Prepare_Basemodel_Config
@@ -16,34 +15,100 @@ from project.logger import logging
 # 1. SEGMENTATION METRICS & LOSSES
 # ==========================================
 
-def dice_coef(y_true, y_pred):
-    """Calculates Dice Coefficient for overlap measurement."""
-    y_true_f = tf.reshape(tf.cast(y_true, tf.float32), [-1])
-    y_pred_f = tf.reshape(tf.cast(y_pred, tf.float32), [-1])
-    intersection = tf.reduce_sum(y_true_f * y_pred_f)
-    return (2. * intersection + 1.0) / (tf.reduce_sum(y_true_f) + tf.reduce_sum(y_pred_f) + 1.0)
+from keras import ops
+from keras import backend as K
+
+def dice_coef(y_true, y_pred, smooth=1.0):
+    """
+    Calculates the Dice Coefficient for overlap measurement.
+    
+    The Dice Coefficient is a statistical tool which measures the similarity 
+    between two sets of data (ground truth vs. prediction).
+    
+    Args:
+        y_true: Ground truth binary mask.
+        y_pred: Predicted mask (probabilities from sigmoid).
+        smooth: Smoothing factor to avoid division by zero.
+        
+    Returns:
+        float: Dice coefficient value (Range [0, 1]).
+    """
+    y_true_f = ops.convert_to_tensor(y_true, dtype="float32")
+    y_pred_f = ops.convert_to_tensor(y_pred, dtype="float32")
+    
+    y_true_f = ops.reshape(y_true_f, [-1])
+    y_pred_f = ops.reshape(y_pred_f, [-1])
+    
+    intersection = ops.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (ops.sum(y_true_f) + ops.sum(y_pred_f) + smooth)
 
 def dice_loss(y_true, y_pred):
-    """Calculates Dice Loss (1 - Dice Coef)."""
-    y_true = tf.cast(y_true, tf.float32)
-    numerator = 2 * tf.reduce_sum(y_true * y_pred)
-    denominator = tf.reduce_sum(y_true + y_pred)
-    return 1 - (numerator + 1) / (denominator + 1)
+    """
+    Calculates Dice Loss as (1 - Dice Coefficient).
+    
+    Useful for segmentation tasks where class imbalance is high (small targets).
+    
+    Args:
+        y_true: Ground truth binary mask.
+        y_pred: Predicted mask.
+        
+    Returns:
+        float: Dice loss value.
+    """
+    return 1.0 - dice_coef(y_true, y_pred)
 
-def focal_loss(gamma=2., alpha=0.25):
-    """Calculates Focal Loss to handle class imbalance."""
+def focal_loss(gamma=2.0, alpha=0.25):
+    """
+    Calculates Focal Loss for binary segmentation.
+    
+    Focal loss down-weights easy examples and focuses on hard-to-classify 
+    pixels (like the edges of a lesion or pneumonia patch).
+    
+    Args:
+        gamma: Focusing parameter. Higher values reduce loss for easy pixels.
+        alpha: Balancing parameter to handle class imbalance.
+        
+    Returns:
+        function: A callable loss function for Keras.
+    """
     def focal_loss_fixed(y_true, y_pred):
-        y_true = tf.cast(y_true, tf.float32)
+        y_true = ops.convert_to_tensor(y_true, dtype="float32")
         epsilon = K.epsilon()
-        y_pred = K.clip(y_pred, epsilon, 1.0 - epsilon)
-        cross_entropy = -y_true * K.log(y_pred)
-        loss = alpha * K.pow(1 - y_pred, gamma) * cross_entropy
-        return K.mean(K.sum(loss, axis=-1))
+        
+        # Clip to avoid log(0)
+        y_pred = ops.clip(y_pred, epsilon, 1.0 - epsilon)
+        
+        # Binary Cross Entropy component
+        # We include both positive and negative cases for binary segmentation
+        bce = - (y_true * ops.log(y_pred) + (1.0 - y_true) * ops.log(1.0 - y_pred))
+        
+        # Focal weighting: (1 - p)^gamma for positive pixels, (p)^gamma for negative
+        p_t = (y_true * y_pred) + ((1 - y_true) * (1 - y_pred))
+        focal_weight = ops.power(1.0 - p_t, gamma)
+        
+        loss = alpha * focal_weight * bce
+        
+        # Average loss over all pixels in the image
+        return ops.mean(loss)
+        
     return focal_loss_fixed
 
 def total_loss(y_true, y_pred):
-    """Combined Focal and Dice Loss."""
+    """
+    Combined Hybrid Loss: Focal Loss + Dice Loss.
+    
+    This combination handles both pixel-level class imbalance (Focal) 
+    and global structural overlap (Dice).
+    
+    Args:
+        y_true: Ground truth binary mask.
+        y_pred: Predicted mask.
+        
+    Returns:
+        float: Combined loss value.
+    """
     return focal_loss()(y_true, y_pred) + dice_loss(y_true, y_pred)
+
 
 
 # ==========================================
