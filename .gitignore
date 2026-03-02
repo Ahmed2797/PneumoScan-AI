@@ -1,4 +1,5 @@
 artifacts
+final_model
 logs
 # Byte-compiled / optimized / DLL files
 __pycache__/
