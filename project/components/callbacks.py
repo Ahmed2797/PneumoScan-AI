@@ -6,6 +6,7 @@ from project.entity.config import Prepare_Callback_Config
 from project.exception import CustomException
 from project.constants import *
 from project.configeration import Configeration_Manager
+from project.utils import create_directories
 
 
 class Call_Backs:
@@ -56,10 +57,10 @@ class Call_Backs:
         """
         try:    
             return tf.keras.callbacks.ModelCheckpoint(
-                filepath=self.config.checkpoint_model_filepath,
-                save_best_only=True,
-                monitor=monitor,
-                verbose=verbose
+                filepath=Path(self.config.checkpoint_model_filepath),
+                save_best_only=bool(self.config.checkpoint_save_best_only),
+                monitor=str(self.config.checkpoint_monitor),
+                verbose=int(self.config.checkpoint_verbose)
             )
         except Exception as e:
             raise CustomException(e, sys)
@@ -78,11 +79,11 @@ class Call_Backs:
         """
         try:    
             return tf.keras.callbacks.ReduceLROnPlateau(
-                monitor=monitor,
-                factor=factor,
-                patience=patience,
-                min_lr=min_lr,
-                verbose=verbose
+                monitor=self.config.checkpoint_monitor,
+                factor=float(self.config.factor),
+                patience=int(self.config.patience),
+                min_lr=float(self.config.min_lr),
+                verbose=int(self.config.checkpoint_verbose)
             )
         except Exception as e:
             raise CustomException(e, sys)
@@ -101,13 +102,14 @@ class Call_Backs:
         """
         try:    
             return tf.keras.callbacks.EarlyStopping(
-                monitor=monitor,
-                patience=patience,
-                restore_best_weights=restore_best_weights,
-                verbose=verbose
+                monitor=str(self.config.checkpoint_monitor),
+                patience=int(self.config.patience_early_stopping),
+                restore_best_weights=bool(self.config.restore_best_weights),
+                verbose=int(self.config.verbose_early_stopping)
             )
         except Exception as e:
             raise CustomException(e, sys)
+
 
     def get_callbacks(self) -> list:
         """
@@ -118,12 +120,14 @@ class Call_Backs:
                   ReduceLROnPlateau, and EarlyStopping callbacks.
         """
         try:    
-            return [
+            call_back_list = [
                 self.create_TensorBoard_callback, 
                 self.create_ModelCheckpoint_callback,
                 self.create_ReduceLROnPlateau_callback,
                 self.create_EarlyStopping_callback
             ]
+            create_directories([self.config.tensorboard_root_log_dir])
+            return call_back_list
         except Exception as e:
             raise CustomException(e, sys)
         
