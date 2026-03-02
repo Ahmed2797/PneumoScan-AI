@@ -1,6 +1,7 @@
 from project.entity.config import (Data_Ingestion_Config,
                                     Prepare_Basemodel_Config,
-                                    Prepare_Callback_Config)
+                                    Prepare_Callback_Config,
+                                    Training_Config)
 from project.utils import read_yaml, create_directories
 from project.exception import CustomException
 from project.logger import logging
@@ -130,9 +131,15 @@ class Configeration_Manager:
         """
         try:
             config = self.config.prepare_callbacks
+            # Extract folder path from full checkpoint filepath
+            model_ckpt_dir = os.path.dirname(config.checkpoint_model_filepath)
 
-            # Create root directory for callbacks
-            create_directories([config.root_dir])
+            # Ensure required directories exist
+            create_directories([
+                Path(model_ckpt_dir),
+                Path(config.tensorboard_root_log_dir)
+            ])
+
 
             prepare_callback_config = Prepare_Callback_Config(
                 root_dir=config.root_dir,
@@ -143,6 +150,58 @@ class Configeration_Manager:
             return prepare_callback_config
         except Exception as e:
             raise CustomException(e, sys)
+    
+
+    def get_training_config(self):
+        """
+        Create and return the training configuration for the model training step.
+
+        This method reads values from the main configuration (`config.yaml`)
+        and parameter settings (`params.yaml`), prepares the required directory 
+        structure, and bundles all training-related settings into a `TrainingConfig` 
+        object. 
+        
+        The returned `TrainingConfig` is later used by the Training Pipeline 
+        to load the base model, set up data generators, apply augmentations, 
+        and start the training process.
+
+        Returns:
+            TrainingConfig: A dataclass object containing all configuration
+            required for model training, including:
+                - root directory for training outputs  
+                - final trained model save path  
+                - updated base model file path  
+                - training dataset directory  
+                - image size, batch size, epochs  
+                - augmentation flags  
+                - learning rate  
+        """
+        training = self.config.training 
+        prepare_base_model = self.config.prepare_base_model
+
+        # Path to extracted dataset folder
+        trainig_data = os.path.join(
+            self.config.data_ingestion.unzip_dir,
+            "validation_dataset"
+        )
+
+        # Ensure training root directory exists
+        create_directories([training.root_dir])
+
+        # Build and return the TrainingConfig dataclass
+        training_config = Training_Config(
+            root_dir= training.root_dir, 
+            trained_model_path= training.trained_model_path, 
+            update_base_model= prepare_base_model.update_base_model, 
+            training_data= trainig_data, 
+            param_image_size= self.param.IMG_SIZE, 
+            param_batch_size= self.param.BATCH_SIZE, 
+            param_epochs= self.param.EPOCHS, 
+            params_augmentation= self.param.AUGMENTATION,
+            param_learning_rate= self.param.LEARNING_RATE
+        )
+        return training_config
+
         
 
         
