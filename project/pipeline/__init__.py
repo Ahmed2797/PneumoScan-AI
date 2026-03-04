@@ -5,6 +5,7 @@ from project.components.data_ingestion import Data_Ingestion
 from project.components.prepare_basemodel import Prepare_Segmentation_Model
 from project.components.callbacks import Call_Backs
 from project.components.model_trainer import Training
+from project.components.model_evaluation import Evaluation
 from project.configeration import Configeration_Manager
 from project.exception import CustomException
 from project.logger import logging
@@ -30,6 +31,7 @@ class Training_Pipeline:
         """
         self.config = Configeration_Manager()
 
+
     def run_data_ingestion(self):
         """
         Execute the data ingestion pipeline.
@@ -50,7 +52,8 @@ class Training_Pipeline:
             logging.info(">>>>>>> Data Ingestion completed <<<<<<<<<")
         except Exception as e:
             raise CustomException(e, sys)
-    
+
+
     def run_prepare_base_model(self):
         """
         Execute the base model preparation pipeline.
@@ -97,6 +100,7 @@ class Training_Pipeline:
             return callbacks_list
         except Exception as e:
             raise CustomException(e, sys)
+ 
     
     def run_model_training(self, callbacks):
         """
@@ -124,6 +128,30 @@ class Training_Pipeline:
             logging.info(">>>>>>> Model Training completed <<<<<<<<<")
         except Exception as e:
             raise CustomException(e, sys)
+        
+
+    def run_model_evaluation(self):
+        """
+        Execute the model evaluation pipeline.
+        
+        Steps:
+        - Load the trained model from disk.
+        - Create a validation dataset generator.
+        - Evaluate the model on the validation dataset.
+        - Log evaluation results to MLflow and save scores to JSON.
+        
+        Raises:
+            CustomException: If any part of model evaluation fails.
+        """
+        try:
+            logging.info(">>>>>>> Model Evaluation started <<<<<<<<<")
+            evaluation_config = self.config.get_model_evaluation_config()
+            evaluator = Evaluation(config=evaluation_config)
+            results = evaluator.evalution()
+            # evaluator.log_mlflow(results=results)
+            logging.info(">>>>>>> Model Evaluation completed <<<<<<<<<")
+        except Exception as e:
+            raise CustomException(e, sys)
 
 
     def run(self):
@@ -139,11 +167,13 @@ class Training_Pipeline:
         """
         try:
             logging.info(">>>>>>> Training Pipeline started <<<<<<<<<")
-            self.run_data_ingestion()
+            # self.run_data_ingestion()
             self.run_prepare_base_model()
             callbacks = self.run_prepare_callbacks()
             self.run_model_training(callbacks=callbacks)
-            # self.run_model_evaluation()
+            self.run_model_evaluation()
             logging.info(">>>>>>> Training Pipeline completed <<<<<<<<<")
         except Exception as e:
             raise CustomException(e, sys)
+
+
