@@ -11,6 +11,8 @@
 
 Automated Lung Segmentation and Abnormality Detection in Chest X-rays using U-Net with ResNet50 Backbone
 
+![AI](learn&experiments/vscode-readme.png)
+
 ## 🛠️ Recommended Conda Environment
 
     git clone https://github.com/Ahmed2797/PneumoScan-AI
