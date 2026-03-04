@@ -42,3 +42,25 @@ step5 :
 
             components/model_trainer.py
 
+step6 :
+    entity/config.py
+    constant/__init__.py
+    yamlfile/config.yamlfile
+    configeration/__init__.py
+
+            components/model_evalution.py
+
+step7 :
+    pipeline/__init__.py
+
+            components/inferance.py
+
+step8 :
+        main.py
+        app.py
+
+
+
+## Starting Project ------------------------------------------------------------------------
+
+
