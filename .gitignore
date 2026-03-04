@@ -1,6 +1,7 @@
 artifacts
 final_model
 logs
+chest-xray
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
