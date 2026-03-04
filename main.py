@@ -9,4 +9,3 @@ if __name__ == "__main__":
         training_pipeline.run()
     except Exception as e:
         raise CustomException(e, sys)
- 
