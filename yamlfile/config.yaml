@@ -8,14 +8,27 @@ data_ingestion:
 
 prepare_base_model:
   root_dir: artifacts/prepare_base_model
-  base_model: artifacts/prepare_base_model/vgg16.h5
-  update_base_model: artifacts/prepare_base_model/update_base_mode.h5
+  base_model: artifacts/prepare_base_model/res-unet.keras
+  update_base_model: artifacts/prepare_base_model/update_base_mode.keras
 
 prepare_callbacks:
   root_dir: artifacts/prepare_callbacks
   tensorboard_root_log_dir: artifacts/prepare_callbacks/tensorboard_log_dir
-  checkpoint_model_filepath: artifacts/prepare_callbacks/checkpoint_/model.h5
+  checkpoint_model_filepath: artifacts/prepare_callbacks/checkpoint_/model.keras
 
 training:
   root_dir: artifacts/training
-  trained_model_path: artifacts/training/bestmodel.h5
+  trained_model_path: artifacts/training/bestmodel.keras
+
+
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  report_file_path: artifacts/model_evaluation/report.yaml
+  threshold_accuracy: 0.6
+  scores_file_dir: artifacts/model_evaluation/scores
+  scores_file: scores.json
+  report_file_dir: artifacts/model_evaluation/report
+  report_file: report.json
+  mlflow_tracking_uri: "https://dagshub.com/Ahmed2797/PneumoScan-AI.mlflow"
+  mlflow_experiment_name: "PneumoScan-AI"
+
