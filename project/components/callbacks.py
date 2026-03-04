@@ -126,7 +126,6 @@ class Call_Backs:
                 self.create_ReduceLROnPlateau_callback,
                 self.create_EarlyStopping_callback
             ]
-            create_directories([self.config.tensorboard_root_log_dir])
             return call_back_list
         except Exception as e:
             raise CustomException(e, sys)
